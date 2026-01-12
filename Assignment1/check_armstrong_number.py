@@ -1,22 +1,22 @@
 def calculate_armstrong_sum(number: int) -> int:
     # Initialize sum and digit count
-    sum_of_powers = 0
+    armstrong_sum = 0
     digit_count = 0
     
     # Calculate number of digits
-    temp_number = number
-    while temp_number > 0:
+    remaining_number = number
+    while remaining_number > 0:
         digit_count += 1
-        temp_number = temp_number // 10
+        remaining_number = remaining_number // 10
     
     # Calculate sum of digits raised to the power of digit count
-    temp_number = number
-    while temp_number > 0:
-        current_digit = temp_number % 10
-        sum_of_powers += (current_digit ** digit_count)
-        temp_number = temp_number // 10
+    remaining_number = number
+    while remaining_number > 0:
+        current_digit = remaining_number % 10
+        armstrong_sum += (current_digit ** digit_count)
+        remaining_number = remaining_number // 10
     
-    return sum_of_powers
+    return armstrong_sum
 
 
 def main():
