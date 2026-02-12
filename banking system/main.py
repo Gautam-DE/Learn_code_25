@@ -1,5 +1,5 @@
 """Main entry point for the banking system application."""
-from domain.models import Customer, SavingsAccount, CheckingAccount, Account
+from domain.models import Customer, SavingsAccount, CurrentAccount, Account
 from services.banking_service import BankingService
 from services.loan_service import LoanService
 from services.interest_strategies import SimpleInterest
@@ -24,13 +24,15 @@ def _get_customer_details() -> Customer:
 def _create_account(customer: Customer) -> Account:
     print("\n--- Account Creation ---")
     while True:
-        choice = input("Choose Account Type (1: Savings, 2: Checking): ")
+        choice = input("Choose Account Type (1: Savings, 2: Current): ")
         if choice == "1":
+            print("Creating Savings Account with 3% Interest Rate.")
             initial_balance = _get_valid_amount("Enter Initial Deposit: ")
             return SavingsAccount(customer, initial_balance)
         elif choice == "2":
+            print("Creating Current Account with $500 Overdraft Limit.")
             initial_balance = _get_valid_amount("Enter Initial Deposit: ")
-            return CheckingAccount(customer, initial_balance)
+            return CurrentAccount(customer, initial_balance)
         else:
             print("Invalid option. Please try again.")
 
@@ -57,7 +59,8 @@ def _display_menu_options():
     print("3. Check Balance")
     print("4. Apply for Loan")
     print("5. View Statement")
-    print("6. Exit")
+    print("6. Apply Interest (Savings Only)")
+    print("7. Exit")
 
 def _process_user_command(choice: str, customer: Customer, account: Account, loan_service: LoanService) -> bool:
     if choice == "1":
@@ -71,6 +74,12 @@ def _process_user_command(choice: str, customer: Customer, account: Account, loa
     elif choice == "5":
         _print_account_statement(account)
     elif choice == "6":
+        if isinstance(account, SavingsAccount):
+            account.add_interest()
+            print("Interest added successfully.")
+        else:
+            print("This feature is only available for Savings Accounts.")
+    elif choice == "7":
         print(f"Goodbye, {customer.name}!")
         return False
     else:

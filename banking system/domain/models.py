@@ -3,7 +3,7 @@ import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List
-from utils.validators import validate_positive_amount, validate_non_empty_string, validate_sufficient_funds
+from utils.validation import validate_positive_amount, validate_non_empty_string, validate_sufficient_funds
 
 class Customer:
     def __init__(self, name: str, email: str):
@@ -59,13 +59,44 @@ class Account(ABC):
 
 
 class SavingsAccount(Account):
+    def __init__(self, customer: Customer, balance: float = 0.0, interest_rate: float = 0.03):
+        super().__init__(customer, balance)
+        self.interest_rate = interest_rate
+
     def get_account_type(self) -> str:
         return "Savings"
 
+    def add_interest(self) -> None:
+        """Adds interest to the current balance."""
+        interest = self.balance * self.interest_rate
+        self.deposit(interest)
+        self._record_transaction(interest, "INTEREST")
 
-class CheckingAccount(Account):
+
+class CurrentAccount(Account):
+    """
+    Current Account allows overdrafts up to a limit.
+    """
+    def __init__(self, customer: Customer, balance: float = 0.0, overdraft_limit: float = 500.0):
+        super().__init__(customer, balance)
+        self.overdraft_limit = overdraft_limit
+
     def get_account_type(self) -> str:
-        return "Checking"
+        return "Current"
+
+    def withdraw(self, amount: float) -> None:
+        """
+        Withdraws amount, allowing overdraft up to the limit.
+        Overrides the base class method.
+        """
+        validate_positive_amount(amount, "Withdrawal Amount")
+        
+        # Check if balance + overdraft limit is sufficient
+        if (self.balance + self.overdraft_limit) < amount:
+            raise ValueError("Insufficient funds (including overdraft limit).")
+            
+        self.balance -= amount
+        self._record_transaction(amount, "WITHDRAWAL")
 
 
 class Loan:

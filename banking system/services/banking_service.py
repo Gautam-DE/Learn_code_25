@@ -1,6 +1,6 @@
 """Banking Service Module."""
 from domain.models import Account
-from utils.validators import validate_positive_amount, validate_sufficient_funds
+from utils.validation import validate_positive_amount, validate_sufficient_funds
 
 class BankingService:
 
