@@ -1,30 +1,43 @@
-from domain.models import Account, Transaction
+"""Banking Service Module."""
+from domain.models import Account
 from utils.validators import validate_positive_amount, validate_sufficient_funds
 
 class BankingService:
-    """
-    Service responsible for banking operations like transfers and account management logic.
-    """
 
     @staticmethod
     def transfer_funds(sender: Account, receiver: Account, amount: float) -> None:
-        validate_positive_amount(amount, "Transfer Amount")
-        validate_sufficient_funds(sender.balance, amount)
-
-        sender.withdraw(amount)
-        receiver.deposit(amount)
-
-        # Update descriptions
-        sender.transactions[-1].description = f"Transfer to {receiver.account_number}"
-        receiver.transactions[-1].description = f"Transfer from {sender.account_number}"
+        BankingService._validate_transfer(sender, amount)
+        
+        BankingService._process_transfer_transaction(sender, receiver, amount)
+        BankingService._update_transaction_descriptions(sender, receiver)
 
     @staticmethod
     def generate_account_statement(account: Account) -> str:
-        """Generates a printable statement for the account."""
-        statement = f"\n--- Account Statement: {account.account_number} ({account.get_account_type()}) ---\n"
-        statement += f"Owner: {account.customer.name}\n"
-        statement += f"Current Balance: {account.balance}\n"
-        statement += "Transactions:\n"
+        header = f"\n--- Account Statement: {account.account_number} ({account.get_account_type()}) ---\n"
+        owner_info = f"Owner: {account.customer.name}\n"
+        balance_info = f"Current Balance: {account.balance}\n"
+        
+        transactions_list = "Transactions:\n"
         for txn in account.transactions:
-            statement += f"  {txn}\n"
-        return statement
+            transactions_list += f"  {txn}\n"
+            
+        return header + owner_info + balance_info + transactions_list
+
+    @staticmethod
+    def _validate_transfer(sender: Account, amount: float):
+        validate_positive_amount(amount, "Transfer Amount")
+        validate_sufficient_funds(sender.balance, amount)
+
+    @staticmethod
+    def _process_transfer_transaction(sender: Account, receiver: Account, amount: float):
+        sender.withdraw(amount)
+        receiver.deposit(amount)
+
+    @staticmethod
+    def _update_transaction_descriptions(sender: Account, receiver: Account):
+        # This assumes the last transaction is the one we just made.
+        # In a real system, we'd pass the transaction object back or use IDs.
+        if sender.transactions:
+            sender.transactions[-1].description = f"Transfer to {receiver.account_number}"
+        if receiver.transactions:
+            receiver.transactions[-1].description = f"Transfer from {sender.account_number}"

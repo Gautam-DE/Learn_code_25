@@ -1,13 +1,12 @@
+"""Loan Service Module."""
+from typing import List
 from domain.models import Loan, Customer
 from domain.interfaces import InterestStrategy
 
 class LoanService:
-    """
-    Manages loan issuance and calculations.
-    """
     def __init__(self, strategy: InterestStrategy):
         self.strategy = strategy
-        self.loans = []
+        self.loans: List[Loan] = []
 
     def grant_loan(self, customer: Customer, principal: float, rate: float) -> Loan:
         loan = Loan(customer, principal, rate)
