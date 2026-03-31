@@ -1,16 +1,44 @@
-"""Validation Utilities."""
+from __future__ import annotations
+from typing import Optional
 
-class ValidationError(Exception):
-    pass
+from domain.exceptions import (
+    AmountValidationError,
+    EmptyFieldError,
+    InsufficientFundsError,
+)
 
-def validate_positive_amount(amount: float, name: str):
+
+def validate_positive_amount(amount: float, field_name: str) -> None:
     if amount <= 0:
-        raise ValidationError(f"{name} must be greater than zero.")
+        raise AmountValidationError(
+            field_name=field_name,
+            received_value=amount,
+            constraint="must be greater than zero",
+        )
 
-def validate_non_empty_string(value: str, name: str):
+
+def validate_non_negative_amount(amount: float, field_name: str) -> None:
+    if amount < 0:
+        raise AmountValidationError(
+            field_name=field_name,
+            received_value=amount,
+            constraint="cannot be negative",
+        )
+
+
+def validate_non_empty_string(value: str, field_name: str) -> None:
     if not value or not value.strip():
-        raise ValidationError(f"{name} cannot be empty.")
+        raise EmptyFieldError(field_name=field_name)
 
-def validate_sufficient_funds(balance: float, amount: float):
-    if balance < amount:
-        raise ValidationError("Insufficient funds for this transaction.")
+
+def validate_sufficient_funds(
+    available: float,
+    requested: float,
+    account_ref: Optional[str] = None,
+) -> None:
+    if available < requested:
+        raise InsufficientFundsError(
+            available=available,
+            requested=requested,
+            account_ref=account_ref,
+        )
